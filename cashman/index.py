@@ -1,14 +1,17 @@
 from os import path
 from flask import Flask
 from flask import request, jsonify
+from flask.blueprints import Blueprint
+from flask_sqlalchemy import sqlalchemy
 
 from cashman.model.expense import Expense, ExpenseSchema
 from cashman.model.income import Income, IncomeSchema
 from cashman.model.transaction_type import TransactionType
+from flask_login import login_required, current_user
 
 
-
-app = Flask(__name__)
+#app = Flask(__name__)
+index = Blueprint('index', __name__)
 
 transactions = [
 
@@ -19,7 +22,8 @@ transactions = [
 
 ]
 
-@app.route('/incomes')
+@index.route('/incomes')
+@login_required
 def get_incomes():
     schema = IncomeSchema(many=True)
     incomes = schema.dump(
@@ -28,14 +32,15 @@ def get_incomes():
     )
     return jsonify(incomes)
 
-@app.route('/incomes', methods=['POST'])
+@index.route('/incomes', methods=['POST'])
 def add_income():
     income = IncomeSchema().load(request.get_json())
     transactions.append(income)
 
     return '', 204
 
-@app.route('/expenses')
+@index.route('/expenses')
+@login_required
 def get_expenses():
     schema = ExpenseSchema(many=True)
     expenses = schema.dump(
@@ -45,11 +50,11 @@ def get_expenses():
     )
     return jsonify(expenses)
 
-@app.route('/expenses', methods=['POST'])
+@index.route('/expenses', methods=['POST'])
 def add_expense():
     expense = ExpenseSchema().load(request.get_json())
     transactions.append(expense)
     return "", 204
 
-if __name__ == "__main__":
-    app.run()
+#if __name__ == "__main__":
+#   app.run()
